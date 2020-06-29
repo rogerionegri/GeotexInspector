@@ -1,0 +1,38 @@
+#! /bin/sh
+# Executed the IDL-based ITT license wizard.
+#
+
+if [ "$IDL_DIR" = "" ]; then
+    IDL_DIR=/usr/local/itt/idl71
+    export IDL_DIR
+fi
+
+IDL_DEVICE=X
+export IDL_DEVICE
+
+if [ ! -f $IDL_DIR/lib/hook/ittlicense.sav ]; then
+   echo "	The License wizard has not been installed.  Please consult the
+	installation guide for instructions on installing the Program Files."
+   exit 0
+fi
+
+# Define an environment variable to cache the real value of HOME
+# so that the ittlicense app can set HOME to this after IDL initialization
+# This is needed because we will be setting HOME to a temporary location
+# for IDL initialization to prevent creation of the user's .idl directory.
+ITTLICENSE_HOMEREAL=$HOME
+export ITTLICENSE_HOMEREAL
+
+# Define a temporary home dir so that the IDL session running
+# ittlicense creates a temporary .idl directory instead of the
+# user's actual .idl directory. This is necessary since the user
+# installing IDL may have used sudo to get root permission, but
+# running IDL later without root permission would not be able to
+# access the .idl directory created by the session invoked with sudo.
+ITTLICENSE_HOMETMP=$HOME/.ittlicense_tmp
+HOME=$ITTLICENSE_HOMETMP
+export HOME
+ 
+$IDL_DIR/bin/idl $* -em=$IDL_DIR/lib/hook/ittlicense.sav
+ 
+rm -r $ITTLICENSE_HOMETMP
